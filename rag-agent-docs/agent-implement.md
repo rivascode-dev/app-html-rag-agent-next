@@ -1,5 +1,11 @@
 ### AGENT IMPLEMENTATION IN NEXT JS
 
+## DEPENDENCIES
+
+```bash
+
+pnpm add @langchain/core @langchain/openai @langchain/community @langchain/textsplitters @langchain/classic langchain cheerio zod @types/cheerio
+```
 
 ## MODEL
 
