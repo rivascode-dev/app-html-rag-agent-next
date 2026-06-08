@@ -11,6 +11,7 @@ pnpm add @langchain/core @langchain/openai @langchain/community @langchain/texts
 
 ```javascript
 import { ChatOpenAI } from '@langchain/openai';
+
 const model = new ChatOpenAI({
     model: 'gpt-4o-mini',
     apiKey: process.env.OPENAI_API_KEY,
@@ -22,6 +23,7 @@ const model = new ChatOpenAI({
 
 ```javascript
 import { OpenAIEmbeddings } from '@langchain/openai';
+
 const embeddings = new OpenAIEmbeddings({
     model: 'text-embedding-3-large',
 });
@@ -32,6 +34,7 @@ const embeddings = new OpenAIEmbeddings({
 
 ```javascript
 import { MemoryVectorStore } from '@langchain/classic/vectorstores/memory';
+
 const vectorStore = new MemoryVectorStore(embeddings);
 ```
 
@@ -39,14 +42,28 @@ const vectorStore = new MemoryVectorStore(embeddings);
 ## INDEXING
 
 ```javascript
+import 'cheerio';
 import { CheerioWebBaseLoader } from '@langchain/community/document_loaders/web/cheerio';
-const cheerioLoader = new CheerioWebBaseLoader(
-    'https://www.chileatiende.gob.cl/fichas/21409-tu-empresa-en-un-dia',
-    {
-        selector: pTagSelector,
-    },
-);
-const docs = await cheerioLoader.load();
+import { Document } from '@langchain/core/documents';
+
+const urls = [
+  'https://nexbu.com/blog/como-constituir-empresa-chile-guia-paso-paso',
+  'https://www.lofwork.cl/5-pasos-para-crear-una-empresa-en-chile/',
+  'https://www.chileatiende.gob.cl/fichas/21409-tu-empresa-en-un-dia',
+];
+const pTagSelector = 'p';
+const documents: Document[] = [];
+
+for (const url of urls) {
+  const cheerioLoader = new CheerioWebBaseLoader(url, {
+    selector: pTagSelector,
+  });
+  const loadedDocs = await cheerioLoader.load();
+  documents.push(...loadedDocs);
+}
+
+console.assert(documents.length === 1);
+console.log(`Total characters: ${documents[0].pageContent.length}`);
 ```
 
 
@@ -56,10 +73,10 @@ const docs = await cheerioLoader.load();
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 
 const splitter = new RecursiveCharacterTextSplitter({
-    chunkSize: 1000,
-    chunkOverlap: 200,
+  chunkSize: 1000,
+  chunkOverlap: 200,
 });
-const allSplits = await splitter.splitDocuments(docs);
+const allSplits = await splitter.splitDocuments(documents);
 console.log(`Split blog post into ${allSplits.length} sub-documents.`);
 ```
 
@@ -73,7 +90,12 @@ await vectorStore.addDocuments(allSplits);
 
 
 ```javascript
+import * as z from 'zod';
 import { tool } from '@langchain/core/tools';
+import { createAgent } from 'langchain';
+import { SystemMessage } from '@langchain/core/messages';
+
+const retrieveSchema = z.object({ query: z.string() });
 const retrieve = tool(
     async ({ query }) => {
         const retrievedDocs = await vectorStore.similaritySearch(query, 2);

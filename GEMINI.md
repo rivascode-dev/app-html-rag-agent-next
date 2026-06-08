@@ -14,7 +14,7 @@ This file defines the general interaction guidelines for the AI Agent. Technical
 - **Testing**: If requested, generate atomic tests focused on business logic (`src/actions/`).
 
 ## 1. AGENT PROTOCOL
-- **Documentation**: Before executing structural changes, the agent MUST read and align with the guidelines inside `.agents/`.
+- **Documentation**: Before writing ANY code or making ANY changes, the agent MUST read and align with the guidelines inside `.agents/`.
 - **Updates**: If a new technical standard is established during the session, it must be updated in the corresponding `.agents/` file.
 
 ---
